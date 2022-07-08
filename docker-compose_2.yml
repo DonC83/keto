@@ -1,0 +1,25 @@
+version: "3.2"
+
+services:
+  keto:
+    image: oryd/keto:v0.7.0-alpha.1-sqlite
+    ports:
+      - "4466:4466"
+      - "4467:4467"
+    command: serve -c /etc/config/keto2.yml
+    restart: on-failure
+    volumes:
+      - type: bind
+        source: .
+        target: /etc
+
+  keto-init:
+    image: oryd/keto:v0.7.0-alpha.1-sqlite
+    environment:
+      - KETO_WRITE_REMOTE=keto:4467
+    volumes:
+      - type: bind
+        source: .
+        target: /etc
+    command: relation-tuple create /etc/config/relation-tuples
+    restart: on-failure

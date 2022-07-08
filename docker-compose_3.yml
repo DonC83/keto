@@ -1,5 +1,4 @@
----
-version: '3.2'
+version: "3.2"
 
 services:
   postgres:
@@ -7,29 +6,19 @@ services:
     container_name: postgres
     ports:
       - '5432:5432'
-#    networks:
-#      - intranet
     restart: always
     environment:
       POSTGRES_PASSWORD: postgres
     volumes:
       - "./init.sh:/docker-entrypoint-initdb.d/init.sh"
 
-  adminer:
-    image: adminer
-#    networks:
-#      - intranet
-    restart: always
-    ports:
-      - 8080:8080
-
   keto-migrate:
     depends_on:
       - postgres
     image: oryd/keto:v0.8.0-alpha.2
-#    networks:
-#      - intranet
-    command: migrate up -y -c /etc/config/keto.yml
+    #    networks:
+    #      - intranet
+    command: migrate up -y -c /etc/config/keto3.yml
     environment:
       - DSN=postgres://keto:keto@postgres:5432/keto?sslmode=disable&max_conns=20&max_idle_conns=4
     volumes:
@@ -39,17 +28,14 @@ services:
 
   keto:
     image: oryd/keto:v0.8.0-alpha.2
-    container_name: keto
-#    networks:
-#      - intranet
     depends_on:
       - keto-migrate
     ports:
-      - '4466:4466'
-      - '4467:4467'
+      - "4466:4466"
+      - "4467:4467"
+    command: serve -c /etc/config/keto3.yml
     environment:
       - DSN=postgres://keto:keto@postgres:5432/keto?sslmode=disable&max_conns=20&max_idle_conns=4
-    command: serve -c /etc/config/keto.yml
     restart: on-failure
     volumes:
       - type: bind
@@ -66,6 +52,3 @@ services:
         target: /etc
     command: relation-tuple create /etc/config/relation-tuples
     restart: on-failure
-
-#networks:
-#  intranet: {}
